@@ -72,7 +72,8 @@ def get_questions():
 
     query = Question.query
 
-    if company_name:
+    # ✅ Fix for "All Companies" logic
+    if company_name and company_name != "All Companies":
         company = Company.query.filter_by(name=company_name).first()
         if company:
             tagged_question_ids = db.session.query(QuestionCompanyTag.question_id).filter_by(company_id=company.id).all()
@@ -91,8 +92,6 @@ def get_questions():
     return jsonify([q.to_dict() for q in questions])
 
 
-
-
 @app.route("/questions/<int:question_id>", methods=["GET"])
 def get_question_detail(question_id):
     question = Question.query.get_or_404(question_id)
@@ -102,3 +101,4 @@ def get_question_detail(question_id):
 # Entry point
 if __name__ == "__main__":
     app.run(debug=True)
+
