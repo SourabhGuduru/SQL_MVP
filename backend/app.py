@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import sqlite3
 
 # Load environment variables from .env
 load_dotenv()
@@ -51,7 +52,6 @@ class QuestionCompanyTag(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
 
-
 # Routes
 @app.route("/")
 def home():
@@ -72,7 +72,7 @@ def get_questions():
 
     query = Question.query
 
-    # Company filter — skip if "All Companies" or empty
+    # Company filter
     if company_name and company_name != "All Companies":
         company = Company.query.filter_by(name=company_name).first()
         if company:
@@ -82,11 +82,10 @@ def get_questions():
         else:
             return jsonify([])
 
-    # Difficulty filter — skip if "All Difficulties" or empty
+    # Difficulty filter
     if difficulty and difficulty != "All Difficulties":
         query = query.filter_by(difficulty=difficulty)
 
-    # Optional search
     if search:
         query = query.filter(Question.title.ilike(f"%{search}%"))
 
@@ -94,11 +93,46 @@ def get_questions():
     return jsonify([q.to_dict() for q in questions])
 
 
-
 @app.route("/questions/<int:question_id>", methods=["GET"])
 def get_question_detail(question_id):
     question = Question.query.get_or_404(question_id)
     return jsonify(question.to_dict())
+
+
+# ✅ SQL Runner Endpoint (SQLite for safety)
+@app.route("/run-sql", methods=["POST"])
+def run_sql():
+    data = request.get_json()
+    query = data.get("query", "")
+
+    if not query.strip():
+        return jsonify({"success": False, "error": "Empty query."})
+
+    try:
+        conn = sqlite3.connect(":memory:")
+        cursor = conn.cursor()
+
+        # Create dummy table
+        cursor.execute("CREATE TABLE questions (id INTEGER PRIMARY KEY, title TEXT, difficulty TEXT)")
+        cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (1, 'Dummy SQL Question', 'Easy')")
+        cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (2, 'Another Dummy', 'Medium')")
+        conn.commit()
+
+        cursor.execute(query)
+
+        if query.strip().lower().startswith("select"):
+            cols = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            results = [dict(zip(cols, row)) for row in rows]
+            return jsonify({"success": True, "rows": results})
+        else:
+            conn.commit()
+            return jsonify({"success": True, "message": "✅ Query executed successfully."})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+    finally:
+        conn.close()
 
 
 # Entry point
