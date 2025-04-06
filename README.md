@@ -1,1 +1,0 @@
-## MVP for SQL website
