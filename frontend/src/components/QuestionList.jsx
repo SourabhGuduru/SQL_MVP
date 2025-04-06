@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const QuestionList = ({ company, difficulty }) => {
+const QuestionList = ({ company, difficulty, search }) => {
   const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (company) params.append("company", company);
     if (difficulty) params.append("difficulty", difficulty);
+    if (search) params.append("search", search);
 
     const endpoint = `http://localhost:5000/questions?${params.toString()}`;
 
     axios.get(endpoint)
       .then(res => setQuestions(res.data))
       .catch(err => console.error(err));
-  }, [company, difficulty]);
+  }, [company, difficulty, search]);
 
   return (
     <div>
@@ -36,4 +37,5 @@ const QuestionList = ({ company, difficulty }) => {
 };
 
 export default QuestionList;
+
 

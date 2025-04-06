@@ -68,6 +68,7 @@ def get_companies():
 def get_questions():
     company_name = request.args.get('company')
     difficulty = request.args.get('difficulty')
+    search = request.args.get('search')
 
     query = Question.query
 
@@ -83,8 +84,12 @@ def get_questions():
     if difficulty:
         query = query.filter_by(difficulty=difficulty)
 
+    if search:
+        query = query.filter(Question.title.ilike(f"%{search}%"))
+
     questions = query.all()
     return jsonify([q.to_dict() for q in questions])
+
 
 
 
