@@ -3,18 +3,32 @@ import axios from "axios";
 
 const CompanyFilter = ({ onSelect }) => {
   const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/companies")
-      .then(res => setCompanies(res.data))
-      .catch(err => console.error(err));
+    axios
+      .get("https://sql-prep-api.onrender.com/companies")
+      .then((res) => setCompanies(res.data))
+      .catch((err) => setError("Failed to load companies"))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="mb-6">
       <h2 className="text-xl font-semibold mb-2">Filter by Company</h2>
-      <div className="flex flex-wrap gap-2">
-        {companies.map(c => (
+
+      {loading && <p className="text-gray-500">Loading companies...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      <div className="flex flex-wrap gap-2 mt-2">
+        <button
+          onClick={() => onSelect("")}
+          className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-200"
+        >
+          All
+        </button>
+        {companies.map((c) => (
           <button
             key={c.id}
             onClick={() => onSelect(c.name)}
@@ -29,3 +43,4 @@ const CompanyFilter = ({ onSelect }) => {
 };
 
 export default CompanyFilter;
+

@@ -10,7 +10,7 @@ const QuestionList = ({ company, difficulty, search }) => {
     if (difficulty) params.append("difficulty", difficulty);
     if (search) params.append("search", search);
 
-    const endpoint = `http://localhost:5000/questions?${params.toString()}`;
+    const endpoint = `https://sql-prep-api.onrender.com/questions?${params.toString()}`;
 
     axios.get(endpoint)
       .then(res => setQuestions(res.data))
