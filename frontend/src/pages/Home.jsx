@@ -4,47 +4,45 @@ import QuestionList from "../components/QuestionList";
 import SQLEditor from "../components/SQLEditor";
 
 const Home = () => {
-  const [selectedCompany, setSelectedCompany] = useState("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("All Companies");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("All Difficulties");
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   const clearFilters = () => {
-    setSelectedCompany("");
-    setSelectedDifficulty("");
+    setSelectedCompany("All Companies");
+    setSelectedDifficulty("All Difficulties");
     setSelectedQuestion(null);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* Title */}
       <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">
         🧠 SQL Interview Prep
       </h1>
 
-      {/* Filters */}
+      {/* Company Filter */}
       <CompanyFilter onSelect={setSelectedCompany} />
 
+      {/* Difficulty Filter */}
       <div className="mb-6">
-        <label className="block text-lg font-semibold mb-2">
-          🎯 Filter by Difficulty
+        <label className="block text-lg font-semibold mb-2 flex items-center gap-2">
+          🎯 Select Difficulty
         </label>
-        <div className="flex gap-3">
-          {["Easy", "Medium", "Hard"].map((level) => (
-            <button
-              key={level}
-              onClick={() => setSelectedDifficulty(level)}
-              className={`px-4 py-2 rounded text-white transition ${
-                selectedDifficulty === level
-                  ? "bg-purple-700"
-                  : "bg-purple-500 hover:bg-purple-600"
-              }`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
+        <select
+          value={selectedDifficulty}
+          onChange={(e) => setSelectedDifficulty(e.target.value)}
+          className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+        >
+          <option value="All Difficulties">All Difficulties</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
       </div>
 
-      {(selectedCompany || selectedDifficulty) && (
+      {/* Clear Filters */}
+      {(selectedCompany !== "All Companies" || selectedDifficulty !== "All Difficulties") && (
         <div className="mb-6">
           <button
             onClick={clearFilters}
@@ -55,27 +53,19 @@ const Home = () => {
         </div>
       )}
 
-      {/* Show Questions Only When Filters Are Selected */}
-      {selectedCompany && selectedDifficulty && !selectedQuestion && (
-        <QuestionList
-          company={selectedCompany}
-          difficulty={selectedDifficulty}
-          onQuestionClick={setSelectedQuestion}
-        />
-      )}
+      {/* Questions */}
+      <QuestionList
+        company={selectedCompany}
+        difficulty={selectedDifficulty}
+        onQuestionClick={setSelectedQuestion}
+      />
 
-      {/* Show Selected Question + SQL Editor */}
+      {/* SQL Editor */}
       {selectedQuestion && (
-        <div className="mt-8 border-t pt-6">
-          <h2 className="text-2xl font-bold mb-2">{selectedQuestion.title}</h2>
-          <p className="text-gray-600 mb-4">{selectedQuestion.description}</p>
+        <div className="mt-10">
+          <h2 className="text-xl font-semibold mb-2">📝 {selectedQuestion.title}</h2>
+          <p className="text-gray-700 mb-4">{selectedQuestion.description}</p>
           <SQLEditor />
-          <button
-            onClick={() => setSelectedQuestion(null)}
-            className="mt-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            🔙 Back to Questions
-          </button>
         </div>
       )}
     </div>

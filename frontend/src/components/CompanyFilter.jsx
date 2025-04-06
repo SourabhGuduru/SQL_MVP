@@ -20,7 +20,7 @@ const CompanyFilter = ({ onSelect }) => {
         htmlFor="company"
         className="block text-lg font-semibold mb-2 flex items-center gap-2"
       >
-        🏢 Filter by Company
+        🏢 Select a Company
       </label>
 
       {loading && <p className="text-gray-500">⏳ Loading companies...</p>}
@@ -30,9 +30,10 @@ const CompanyFilter = ({ onSelect }) => {
         <select
           id="company"
           onChange={(e) => onSelect(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+          defaultValue="All Companies"
+          className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-          <option value="">All Companies</option>
+          <option value="All Companies">All Companies</option>
           {companies.map((company) => (
             <option key={company.id} value={company.name}>
               {company.name}
@@ -45,5 +46,4 @@ const CompanyFilter = ({ onSelect }) => {
 };
 
 export default CompanyFilter;
-
 

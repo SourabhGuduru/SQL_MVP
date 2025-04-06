@@ -55,7 +55,7 @@ class QuestionCompanyTag(db.Model):
 # Routes
 @app.route("/")
 def home():
-    return jsonify({"message": "SQL Prep API is running "})
+    return jsonify({"message": "SQL Prep API is running"})
 
 
 @app.route("/companies", methods=["GET"])
@@ -72,7 +72,7 @@ def get_questions():
 
     query = Question.query
 
-    # ✅ Fix for "All Companies" logic
+    # Company filter — skip if "All Companies" or empty
     if company_name and company_name != "All Companies":
         company = Company.query.filter_by(name=company_name).first()
         if company:
@@ -82,14 +82,17 @@ def get_questions():
         else:
             return jsonify([])
 
-    if difficulty:
+    # Difficulty filter — skip if "All Difficulties" or empty
+    if difficulty and difficulty != "All Difficulties":
         query = query.filter_by(difficulty=difficulty)
 
+    # Optional search
     if search:
         query = query.filter(Question.title.ilike(f"%{search}%"))
 
     questions = query.all()
     return jsonify([q.to_dict() for q in questions])
+
 
 
 @app.route("/questions/<int:question_id>", methods=["GET"])
@@ -101,4 +104,3 @@ def get_question_detail(question_id):
 # Entry point
 if __name__ == "__main__":
     app.run(debug=True)
-
