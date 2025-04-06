@@ -6,17 +6,19 @@ import SQLEditor from "../components/SQLEditor";
 const Home = () => {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
+  const [activeQuestion, setActiveQuestion] = useState(null);
 
   const clearFilters = () => {
     setSelectedCompany("");
     setSelectedDifficulty("");
+    setActiveQuestion(null);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
-      <h1 className="text-3xl font-bold text-center mb-8 text-blue-600 flex items-center justify-center gap-2">
-        <span role="img" aria-label="brain">🧠</span> SQL Interview Prep
+      <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">
+        🧠 SQL Interview Prep
       </h1>
 
       {/* Company Filter */}
@@ -24,53 +26,61 @@ const Home = () => {
 
       {/* Difficulty Filter */}
       <div className="mb-6">
-        <label htmlFor="difficulty" className="block text-lg font-semibold mb-2">
+        <label className="block text-lg font-semibold mb-2">
           🎯 Filter by Difficulty
         </label>
-        <select
-          id="difficulty"
-          value={selectedDifficulty}
-          onChange={(e) => setSelectedDifficulty(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        >
-          <option value="">All Levels</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
+        <div className="flex gap-3">
+          {["Easy", "Medium", "Hard"].map((level) => (
+            <button
+              key={level}
+              onClick={() => setSelectedDifficulty(level)}
+              className={`px-4 py-2 rounded text-white transition ${
+                selectedDifficulty === level
+                  ? "bg-purple-700"
+                  : "bg-purple-500 hover:bg-purple-600"
+              }`}
+            >
+              {level}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Clear Filters Button */}
+      {/* Clear Filters */}
       {(selectedCompany || selectedDifficulty) && (
         <div className="mb-6">
           <button
             onClick={clearFilters}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
           >
             Clear Filters
           </button>
         </div>
       )}
 
-      {/* Conditionally Render Questions */}
-      {selectedCompany && selectedDifficulty ? (
+      {/* Show Questions only if filters are applied */}
+      {selectedCompany && selectedDifficulty && (
         <QuestionList
           company={selectedCompany}
           difficulty={selectedDifficulty}
+          onQuestionClick={setActiveQuestion}
         />
-      ) : (
-        <p className="text-gray-500 italic mb-6">
-          Select both company and difficulty to view questions.
-        </p>
       )}
 
-      {/* SQL Editor */}
-      <div className="mt-10">
-        <SQLEditor />
-      </div>
+      {/* Show SQL Editor if a question is selected */}
+      {activeQuestion && (
+        <div className="mt-10">
+          <h2 className="text-xl font-semibold mb-2 text-gray-700">
+            📝 Solving: {activeQuestion.title}
+          </h2>
+          <p className="mb-4 text-gray-600">{activeQuestion.description}</p>
+          <SQLEditor />
+        </div>
+      )}
     </div>
   );
 };
 
 export default Home;
+
 

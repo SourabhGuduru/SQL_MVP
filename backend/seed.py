@@ -13,23 +13,37 @@ with app.app_context():
     db.session.commit()
 
     # Sample questions
-    q1 = Question(
-        title="Find top customers by order count",
-        description="Write a SQL query to return customers who made more than 3 orders.",
-        difficulty="Medium"
-    )
-    q2 = Question(
-        title="Get total sales per month",
-        description="Write a SQL query to return total sales grouped by month and year.",
-        difficulty="Easy"
-    )
-    db.session.add_all([q1, q2])
+    questions = [
+        Question(title="Find top customers by order count", description="Write a SQL query to return customers who made more than 3 orders.", difficulty="Medium"),
+        Question(title="Get total sales per month", description="Write a SQL query to return total sales grouped by month and year.", difficulty="Easy"),
+        Question(title="Find customers with no orders", description="List customers who haven't placed any orders.", difficulty="Easy"),
+        Question(title="Top 5 selling products", description="Get the 5 products with the highest number of sales.", difficulty="Medium"),
+        Question(title="Monthly revenue growth", description="Calculate month-over-month revenue growth.", difficulty="Hard"),
+        Question(title="List repeat customers", description="Identify customers who have placed more than one order.", difficulty="Easy"),
+        Question(title="Orders with delayed shipments", description="Find orders where the shipment was delayed.", difficulty="Medium"),
+        Question(title="Customer retention rate", description="Calculate customer retention rate over 3 months.", difficulty="Hard"),
+        Question(title="Cancelled orders ratio", description="Get the percentage of cancelled orders.", difficulty="Easy"),
+        Question(title="Revenue by product category", description="Show total revenue grouped by product category.", difficulty="Medium")
+    ]
+    db.session.add_all(questions)
     db.session.commit()
 
-    # Tagging questions to companies
-    db.session.add(QuestionCompanyTag(question_id=q1.id, company_id=c1.id))
-    db.session.add(QuestionCompanyTag(question_id=q2.id, company_id=c2.id))
+    # Tag questions to companies
+    tags = [
+        QuestionCompanyTag(question_id=questions[0].id, company_id=c1.id),
+        QuestionCompanyTag(question_id=questions[1].id, company_id=c2.id),
+        QuestionCompanyTag(question_id=questions[2].id, company_id=c1.id),
+        QuestionCompanyTag(question_id=questions[3].id, company_id=c1.id),
+        QuestionCompanyTag(question_id=questions[4].id, company_id=c2.id),
+        QuestionCompanyTag(question_id=questions[5].id, company_id=c1.id),
+        QuestionCompanyTag(question_id=questions[6].id, company_id=c2.id),
+        QuestionCompanyTag(question_id=questions[7].id, company_id=c2.id),
+        QuestionCompanyTag(question_id=questions[8].id, company_id=c1.id),
+        QuestionCompanyTag(question_id=questions[9].id, company_id=c2.id)
+    ]
+    db.session.add_all(tags)
     db.session.commit()
 
-    print(" Seeded sample data.")
+    print("Seeded 10 sample questions across 2 companies")
+
 
