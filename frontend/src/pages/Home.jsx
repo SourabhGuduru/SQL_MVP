@@ -6,12 +6,10 @@ import SQLEditor from "../components/SQLEditor";
 const Home = () => {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const clearFilters = () => {
     setSelectedCompany("");
     setSelectedDifficulty("");
-    setSearchTerm("");
   };
 
   return (
@@ -21,10 +19,10 @@ const Home = () => {
         <span role="img" aria-label="brain">🧠</span> SQL Interview Prep
       </h1>
 
-      {/* Filters */}
+      {/* Company Filter */}
       <CompanyFilter onSelect={setSelectedCompany} />
 
-      {/* Difficulty Dropdown */}
+      {/* Difficulty Filter */}
       <div className="mb-6">
         <label htmlFor="difficulty" className="block text-lg font-semibold mb-2">
           🎯 Filter by Difficulty
@@ -43,7 +41,7 @@ const Home = () => {
       </div>
 
       {/* Clear Filters Button */}
-      {(selectedCompany || selectedDifficulty || searchTerm) && (
+      {(selectedCompany || selectedDifficulty) && (
         <div className="mb-6">
           <button
             onClick={clearFilters}
@@ -54,12 +52,17 @@ const Home = () => {
         </div>
       )}
 
-      {/* Question List */}
-      <QuestionList
-        company={selectedCompany}
-        difficulty={selectedDifficulty}
-        search={searchTerm}
-      />
+      {/* Conditionally Render Questions */}
+      {selectedCompany && selectedDifficulty ? (
+        <QuestionList
+          company={selectedCompany}
+          difficulty={selectedDifficulty}
+        />
+      ) : (
+        <p className="text-gray-500 italic mb-6">
+          Select both company and difficulty to view questions.
+        </p>
+      )}
 
       {/* SQL Editor */}
       <div className="mt-10">
@@ -70,3 +73,4 @@ const Home = () => {
 };
 
 export default Home;
+
