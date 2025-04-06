@@ -31,5 +31,5 @@ with app.app_context():
     db.session.add(QuestionCompanyTag(question_id=q2.id, company_id=c2.id))
     db.session.commit()
 
-    print("✅ Seeded sample data.")
+    print(" Seeded sample data.")
 
