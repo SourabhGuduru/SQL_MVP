@@ -67,16 +67,25 @@ def get_companies():
 @app.route("/questions", methods=["GET"])
 def get_questions():
     company_name = request.args.get('company')
+    difficulty = request.args.get('difficulty')
+
+    query = Question.query
+
     if company_name:
         company = Company.query.filter_by(name=company_name).first()
-        if not company:
+        if company:
+            tagged_question_ids = db.session.query(QuestionCompanyTag.question_id).filter_by(company_id=company.id).all()
+            question_ids = [qid for (qid,) in tagged_question_ids]
+            query = query.filter(Question.id.in_(question_ids))
+        else:
             return jsonify([])
-        tagged_question_ids = db.session.query(QuestionCompanyTag.question_id).filter_by(company_id=company.id).all()
-        question_ids = [qid for (qid,) in tagged_question_ids]
-        questions = Question.query.filter(Question.id.in_(question_ids)).all()
-    else:
-        questions = Question.query.all()
+
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+
+    questions = query.all()
     return jsonify([q.to_dict() for q in questions])
+
 
 
 @app.route("/questions/<int:question_id>", methods=["GET"])
