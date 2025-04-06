@@ -15,29 +15,37 @@ const Home = () => {
   };
 
   return (
-    <div className="p-4">
-      {/* Search Box */}
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Header */}
+      <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">
+        🧠 SQL Interview Prep
+      </h1>
+
+      {/* Search Bar */}
       <div className="mb-6">
         <input
           type="text"
           placeholder="🔍 Search questions..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 rounded px-4 py-2 w-full"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
-      {/* Filters */}
+      {/* Company Filter */}
       <CompanyFilter onSelect={setSelectedCompany} />
 
-      <div className="mb-6 mt-4">
-        <h2 className="text-xl font-semibold mb-2">Filter by Difficulty</h2>
-        <div className="flex gap-2">
+      {/* Difficulty Filter */}
+      <div className="mb-6">
+        <label className="block text-lg font-semibold mb-2">
+          🎯 Filter by Difficulty
+        </label>
+        <div className="flex gap-3">
           {["Easy", "Medium", "Hard"].map((level) => (
             <button
               key={level}
               onClick={() => setSelectedDifficulty(level)}
-              className={`px-4 py-2 rounded text-white ${
+              className={`px-4 py-2 rounded text-white transition ${
                 selectedDifficulty === level
                   ? "bg-purple-700"
                   : "bg-purple-500 hover:bg-purple-600"
@@ -51,12 +59,14 @@ const Home = () => {
 
       {/* Clear Filters */}
       {(selectedCompany || selectedDifficulty || searchTerm) && (
-        <button
-          onClick={clearFilters}
-          className="mb-6 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-        >
-          Clear Filters
-        </button>
+        <div className="mb-6">
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+          >
+            Clear Filters
+          </button>
+        </div>
       )}
 
       {/* Questions List */}
@@ -67,10 +77,11 @@ const Home = () => {
       />
 
       {/* SQL Editor */}
-      <SQLEditor />
+      <div className="mt-10">
+        <SQLEditor />
+      </div>
     </div>
   );
 };
 
 export default Home;
-
