@@ -10,24 +10,27 @@ const CompanyFilter = ({ onSelect }) => {
     axios
       .get("https://sql-prep-api.onrender.com/companies")
       .then((res) => setCompanies(res.data))
-      .catch((err) => setError("Failed to load companies"))
+      .catch(() => setError("Failed to load companies"))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="mb-6">
-      <label htmlFor="company" className="block text-lg font-semibold mb-2">
+      <label
+        htmlFor="company"
+        className="block text-lg font-semibold mb-2 flex items-center gap-2"
+      >
         🏢 Filter by Company
       </label>
 
-      {loading && <p className="text-gray-500">Loading companies...</p>}
+      {loading && <p className="text-gray-500">⏳ Loading companies...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       {!loading && !error && (
         <select
           id="company"
           onChange={(e) => onSelect(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border border-gray-300 rounded px-4 py-2 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           <option value="">All Companies</option>
           {companies.map((company) => (
@@ -42,4 +45,5 @@ const CompanyFilter = ({ onSelect }) => {
 };
 
 export default CompanyFilter;
+
 
