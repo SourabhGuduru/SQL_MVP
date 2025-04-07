@@ -20,7 +20,7 @@ const QuestionList = ({ company, difficulty }) => {
   }, [company, difficulty]);
 
   if (!company && !difficulty) {
-    return <p className="italic text-gray-500 mt-6">Please select both a company and difficulty level to view questions.</p>;
+    return <p className="italic text-gray-500 mt-6">Please select filters to view questions.</p>;
   }
 
   if (loading) {
@@ -28,24 +28,45 @@ const QuestionList = ({ company, difficulty }) => {
   }
 
   if (questions.length === 0) {
-    return <p className="text-gray-500 mt-6">No questions found for the selected filters.</p>;
+    return <p className="text-gray-500 mt-6">No questions found.</p>;
   }
 
   return (
-    <div className="mt-6">
-      <h2 className="text-xl font-bold mb-4">🧠 Questions</h2>
-      <ul className="space-y-4">
-        {questions.map((q) => (
-          <li
-            key={q.id}
-            className="bg-white p-4 border rounded shadow hover:bg-gray-50 cursor-pointer transition"
-            onClick={() => navigate(`/questions/${q.id}`)}
-          >
-            <div className="font-semibold text-lg">{q.title}</div>
-            <div className="text-sm text-gray-600">Difficulty: {q.difficulty}</div>
-          </li>
-        ))}
-      </ul>
+    <div className="bg-white border rounded shadow overflow-auto">
+      <table className="min-w-full table-auto border-collapse">
+        <thead className="bg-gray-100 text-sm text-gray-700">
+          <tr>
+            <th className="px-4 py-2 text-left border-b">#</th>
+            <th className="px-4 py-2 text-left border-b">🧠 Title</th>
+            <th className="px-4 py-2 text-left border-b">🎯 Difficulty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {questions.map((q, index) => (
+            <tr
+              key={q.id}
+              className="hover:bg-purple-50 cursor-pointer transition"
+              onClick={() => navigate(`/questions/${q.id}`)}
+            >
+              <td className="px-4 py-2 border-b text-gray-500">{index + 1}</td>
+              <td className="px-4 py-2 border-b font-medium text-purple-800">{q.title}</td>
+              <td className="px-4 py-2 border-b">
+                <span
+                  className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                    q.difficulty === "Easy"
+                      ? "bg-green-100 text-green-800"
+                      : q.difficulty === "Medium"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {q.difficulty}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

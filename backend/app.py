@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Config PostgreSQL connection
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')  # e.g., 'postgresql://user:pass@host:port/dbname'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -35,6 +35,11 @@ class Question(db.Model):
     description = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    
+    # New fields
+    table_name = db.Column(db.String(100))
+    schema_description = db.Column(db.Text)
+    sample_data = db.Column(db.Text)
 
     def to_dict(self):
         return {
@@ -42,7 +47,10 @@ class Question(db.Model):
             "title": self.title,
             "description": self.description,
             "difficulty": self.difficulty,
-            "created_at": self.created_at
+            "created_at": self.created_at,
+            "table_name": self.table_name,
+            "schema_description": self.schema_description,
+            "sample_data": self.sample_data,
         }
 
 
@@ -51,6 +59,7 @@ class QuestionCompanyTag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
+
 
 # Routes
 @app.route("/")
@@ -72,17 +81,16 @@ def get_questions():
 
     query = Question.query
 
-    # Company filter
     if company_name and company_name != "All Companies":
         company = Company.query.filter_by(name=company_name).first()
         if company:
-            tagged_question_ids = db.session.query(QuestionCompanyTag.question_id).filter_by(company_id=company.id).all()
-            question_ids = [qid for (qid,) in tagged_question_ids]
+            question_ids = [
+                qid for (qid,) in db.session.query(QuestionCompanyTag.question_id).filter_by(company_id=company.id)
+            ]
             query = query.filter(Question.id.in_(question_ids))
         else:
             return jsonify([])
 
-    # Difficulty filter
     if difficulty and difficulty != "All Difficulties":
         query = query.filter_by(difficulty=difficulty)
 
@@ -99,7 +107,6 @@ def get_question_detail(question_id):
     return jsonify(question.to_dict())
 
 
-# ✅ SQL Runner Endpoint (SQLite for safety)
 @app.route("/run-sql", methods=["POST"])
 def run_sql():
     data = request.get_json()
@@ -112,7 +119,7 @@ def run_sql():
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
 
-        # Create dummy table
+        # Dummy table for testing (you can modify this logic per question later)
         cursor.execute("CREATE TABLE questions (id INTEGER PRIMARY KEY, title TEXT, difficulty TEXT)")
         cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (1, 'Dummy SQL Question', 'Easy')")
         cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (2, 'Another Dummy', 'Medium')")

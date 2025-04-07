@@ -12,12 +12,14 @@ const QuestionPage = () => {
   const [query, setQuery] = useState("SELECT * FROM questions;");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
       .get(`https://sql-prep-api.onrender.com/questions/${id}`)
       .then((res) => setQuestion(res.data))
-      .catch(() => setQuestion(null));
+      .catch(() => setQuestion(null))
+      .finally(() => setLoading(false));
   }, [id]);
 
   const runQuery = async () => {
@@ -39,11 +41,12 @@ const QuestionPage = () => {
     }
   };
 
+  if (loading) return <div className="p-6 text-gray-600">Loading question...</div>;
   if (!question) return <div className="p-6 text-red-500">❌ Question not found.</div>;
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen gap-4 p-4">
-      {/* Left Panel – Question */}
+    <div className="flex flex-col lg:flex-row gap-4 h-screen p-4">
+      {/* Left Panel – Question Info */}
       <div className="w-full lg:w-1/3 bg-white border p-4 rounded shadow overflow-auto relative">
         <button
           onClick={() => navigate("/")}
@@ -51,9 +54,40 @@ const QuestionPage = () => {
         >
           🔙 Back
         </button>
+
         <h2 className="text-xl font-bold mb-2 mt-10">📄 {question.title}</h2>
         <p className="text-gray-700 mb-2">{question.description}</p>
-        <p className="text-sm text-gray-500">Difficulty: {question.difficulty}</p>
+        <p className="text-sm text-gray-500 mb-4">🎯 Difficulty: {question.difficulty}</p>
+
+        {/* Schema Display */}
+        {question.schema_description && (
+          <div className="mt-4">
+            <h4 className="font-semibold text-gray-800 mb-2">📐 Table Schema</h4>
+            <div className="bg-gray-50 p-3 rounded shadow-sm overflow-auto">
+              <table className="w-full table-auto text-sm border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧾 Column</th>
+                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧬 Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {question.schema_description.split(/,|\n/).map((line, idx) => {
+                    const [rawCol, ...rest] = line.trim().split(/\s+/);
+                    const col = rawCol?.replace(/[:(]/g, "");
+                    const type = rest.join(" ")?.replace(/[),]/g, "");
+                    return (
+                      <tr key={idx}>
+                        <td className="p-2 border-b font-mono text-gray-800">{col}</td>
+                        <td className="p-2 border-b text-gray-600">{type}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Middle Panel – SQL Editor */}
@@ -67,7 +101,7 @@ const QuestionPage = () => {
           name="sql-editor"
           editorProps={{ $blockScrolling: true }}
           className="w-full border"
-          height="180px"
+          height="200px"
         />
         <button
           onClick={runQuery}
@@ -83,7 +117,7 @@ const QuestionPage = () => {
         <h3 className="text-lg font-semibold mb-2">📊 Output</h3>
         {result && Array.isArray(result) ? (
           <div className="overflow-auto">
-            <table className="w-full table-auto border-collapse border border-gray-300">
+            <table className="w-full table-auto border-collapse border border-gray-300 text-sm">
               <thead>
                 <tr>
                   {Object.keys(result[0] || {}).map((col) => (
@@ -117,3 +151,4 @@ const QuestionPage = () => {
 };
 
 export default QuestionPage;
+
