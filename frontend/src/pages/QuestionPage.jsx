@@ -9,23 +9,27 @@ const QuestionPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [question, setQuestion] = useState(null);
-  const [query, setQuery] = useState("SELECT * FROM questions;");
+  const [query, setQuery] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
       .get(`https://sql-prep-api.onrender.com/questions/${id}`)
-      .then((res) => setQuestion(res.data))
-      .catch(() => setQuestion(null))
-      .finally(() => setLoading(false));
+      .then((res) => {
+        setQuestion(res.data);
+        setQuery(`SELECT * FROM ${res.data.table_name?.split(",")[0]};`);
+      })
+      .catch(() => setQuestion(null));
   }, [id]);
 
   const runQuery = async () => {
     try {
       const res = await axios.post("https://sql-prep-api.onrender.com/run-sql", {
         query,
+        table_name: question.table_name,
+        schema_description: question.schema_description,
+        sample_data: question.sample_data
       });
 
       if (res.data.success) {
@@ -41,8 +45,7 @@ const QuestionPage = () => {
     }
   };
 
-  if (loading) return <div className="p-6 text-gray-600">Loading question...</div>;
-  if (!question) return <div className="p-6 text-red-500">❌ Question not found.</div>;
+  if (!question) return <div className="p-6 text-gray-600">Loading question...</div>;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-screen p-4">
@@ -62,27 +65,29 @@ const QuestionPage = () => {
         {/* Schema Display */}
         {question.schema_description && (
           <div className="mt-4">
-            <h4 className="font-semibold text-gray-800 mb-2">📐 Table Schema</h4>
+            <h4 className="font-semibold text-gray-800 mb-2">📐 Schema:</h4>
             <div className="bg-gray-50 p-3 rounded shadow-sm overflow-auto">
               <table className="w-full table-auto text-sm border-collapse">
                 <thead>
                   <tr>
                     <th className="text-left p-2 font-semibold text-gray-700 border-b">🧾 Column</th>
-                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧬 Type</th>
+                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧬 Data Type</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {question.schema_description.split(/,|\n/).map((line, idx) => {
-                    const [rawCol, ...rest] = line.trim().split(/\s+/);
-                    const col = rawCol?.replace(/[:(]/g, "");
-                    const type = rest.join(" ")?.replace(/[),]/g, "");
-                    return (
-                      <tr key={idx}>
-                        <td className="p-2 border-b font-mono text-gray-800">{col}</td>
-                        <td className="p-2 border-b text-gray-600">{type}</td>
-                      </tr>
-                    );
-                  })}
+                  {question.schema_description
+                    .split(",")
+                    .map((line, idx) => {
+                      const [rawCol, ...rest] = line.trim().split(/\s+/);
+                      const type = rest.join(" ").replace(/[()]/g, "").trim();
+                      const col = rawCol?.replace(/[()]/g, "").trim();
+                      return (
+                        <tr key={idx}>
+                          <td className="p-2 border-b font-mono text-gray-800">{col}</td>
+                          <td className="p-2 border-b text-gray-600">{type}</td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -151,4 +156,3 @@ const QuestionPage = () => {
 };
 
 export default QuestionPage;
-

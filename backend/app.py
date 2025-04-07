@@ -106,11 +106,12 @@ def get_question_detail(question_id):
     question = Question.query.get_or_404(question_id)
     return jsonify(question.to_dict())
 
-
 @app.route("/run-sql", methods=["POST"])
 def run_sql():
     data = request.get_json()
     query = data.get("query", "")
+    schema_description = data.get("schema_description", "")
+    sample_data = data.get("sample_data", "")
 
     if not query.strip():
         return jsonify({"success": False, "error": "Empty query."})
@@ -119,12 +120,22 @@ def run_sql():
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
 
-        # Dummy table for testing (you can modify this logic per question later)
-        cursor.execute("CREATE TABLE questions (id INTEGER PRIMARY KEY, title TEXT, difficulty TEXT)")
-        cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (1, 'Dummy SQL Question', 'Easy')")
-        cursor.execute("INSERT INTO questions (id, title, difficulty) VALUES (2, 'Another Dummy', 'Medium')")
-        conn.commit()
+        # Create tables from schema
+        if schema_description:
+            tables = schema_description.split(")")
+            for table_def in tables:
+                table_def = table_def.strip()
+                if not table_def:
+                    continue
+                if not table_def.endswith(")"):
+                    table_def += ")"
+                cursor.execute(f"CREATE TABLE {table_def}")
 
+        # Insert sample data
+        if sample_data:
+            cursor.executescript(sample_data)
+
+        # Execute user query
         cursor.execute(query)
 
         if query.strip().lower().startswith("select"):
