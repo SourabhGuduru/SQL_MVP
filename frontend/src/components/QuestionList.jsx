@@ -13,7 +13,7 @@ const QuestionList = ({ company, difficulty }) => {
     if (difficulty && difficulty !== "All Difficulties") params.append("difficulty", difficulty);
 
     axios
-      .get(`https://sql-prep-api.onrender.com/questions?${params.toString()}`)
+      .get(`http://localhost:5000/questions?${params.toString()}`)
       .then((res) => setQuestions(res.data))
       .catch((err) => console.error("Failed to load questions", err))
       .finally(() => setLoading(false));

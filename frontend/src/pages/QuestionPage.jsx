@@ -13,23 +13,26 @@ const QuestionPage = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
+  // Load question data
   useEffect(() => {
     axios
-      .get(`https://sql-prep-api.onrender.com/questions/${id}`)
+      .get(`http://localhost:5000/questions/${id}`)
       .then((res) => {
+        console.log("✅ Loaded question from backend:", res.data); // Debugging
         setQuestion(res.data);
-        setQuery(`SELECT * FROM ${res.data.table_name?.split(",")[0]};`);
+        const firstTable = res.data.table_name?.split(",")[0]?.trim();
+        setQuery(`SELECT * FROM ${firstTable};`);
       })
       .catch(() => setQuestion(null));
   }, [id]);
 
   const runQuery = async () => {
     try {
-      const res = await axios.post("https://sql-prep-api.onrender.com/run-sql", {
+      const res = await axios.post("http://localhost:5000/run-sql", {
         query,
         table_name: question.table_name,
         schema_description: question.schema_description,
-        sample_data: question.sample_data
+        sample_data: question.sample_data,
       });
 
       if (res.data.success) {
@@ -45,7 +48,9 @@ const QuestionPage = () => {
     }
   };
 
-  if (!question) return <div className="p-6 text-gray-600">Loading question...</div>;
+  if (!question) {
+    return <div className="p-6 text-gray-600">Loading question...</div>;
+  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-screen p-4">
@@ -60,7 +65,9 @@ const QuestionPage = () => {
 
         <h2 className="text-xl font-bold mb-2 mt-10">📄 {question.title}</h2>
         <p className="text-gray-700 mb-2">{question.description}</p>
-        <p className="text-sm text-gray-500 mb-4">🎯 Difficulty: {question.difficulty}</p>
+        <p className="text-sm text-gray-500 mb-4">
+          🎯 Difficulty: {question.difficulty}
+        </p>
 
         {/* Schema Display */}
         {question.schema_description && (
@@ -70,24 +77,28 @@ const QuestionPage = () => {
               <table className="w-full table-auto text-sm border-collapse">
                 <thead>
                   <tr>
-                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧾 Column</th>
-                    <th className="text-left p-2 font-semibold text-gray-700 border-b">🧬 Data Type</th>
+                    <th className="text-left p-2 font-semibold text-gray-700 border-b">
+                      🧾 Column
+                    </th>
+                    <th className="text-left p-2 font-semibold text-gray-700 border-b">
+                      🧬 Data Type
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {question.schema_description
-                    .split(",")
-                    .map((line, idx) => {
-                      const [rawCol, ...rest] = line.trim().split(/\s+/);
-                      const type = rest.join(" ").replace(/[()]/g, "").trim();
-                      const col = rawCol?.replace(/[()]/g, "").trim();
-                      return (
-                        <tr key={idx}>
-                          <td className="p-2 border-b font-mono text-gray-800">{col}</td>
-                          <td className="p-2 border-b text-gray-600">{type}</td>
-                        </tr>
-                      );
-                    })}
+                  {question.schema_description.split(",").map((line, idx) => {
+                    const parts = line.trim().split(/\s+/);
+                    const col = parts[0]?.replace(/[()]/g, "");
+                    const type = parts.slice(1).join(" ")?.replace(/[()]/g, "");
+                    return (
+                      <tr key={idx}>
+                        <td className="p-2 border-b font-mono text-gray-800">
+                          {col}
+                        </td>
+                        <td className="p-2 border-b text-gray-600">{type}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -106,7 +117,7 @@ const QuestionPage = () => {
           name="sql-editor"
           editorProps={{ $blockScrolling: true }}
           className="w-full border"
-          height="200px"
+          height="220px"
         />
         <button
           onClick={runQuery}
@@ -126,7 +137,10 @@ const QuestionPage = () => {
               <thead>
                 <tr>
                   {Object.keys(result[0] || {}).map((col) => (
-                    <th key={col} className="border px-3 py-2 bg-gray-100 text-left">
+                    <th
+                      key={col}
+                      className="border px-3 py-2 bg-gray-100 text-left"
+                    >
                       {col}
                     </th>
                   ))}

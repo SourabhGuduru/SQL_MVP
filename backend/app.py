@@ -112,6 +112,7 @@ def run_sql():
     query = data.get("query", "")
     schema_description = data.get("schema_description", "")
     sample_data = data.get("sample_data", "")
+    table_names = data.get("table_name", "")
 
     if not query.strip():
         return jsonify({"success": False, "error": "Empty query."})
@@ -120,22 +121,31 @@ def run_sql():
         conn = sqlite3.connect(":memory:")
         cursor = conn.cursor()
 
-        # Create tables from schema
-        if schema_description:
-            tables = schema_description.split(")")
-            for table_def in tables:
-                table_def = table_def.strip()
-                if not table_def:
-                    continue
-                if not table_def.endswith(")"):
-                    table_def += ")"
-                cursor.execute(f"CREATE TABLE {table_def}")
+        # ✅ Step 1: Create table(s)
+        if schema_description and table_names:
+            tables = [t.strip() for t in table_names.split(",")]
+            schema_lines = [line.strip() for line in schema_description.split(",") if line.strip()]
+            
+            # If only one table, all columns go there
+            if len(tables) == 1:
+                create_stmt = f"CREATE TABLE {tables[0]} ({', '.join(schema_lines)});"
+                cursor.execute(create_stmt)
+            else:
+                # Round-robin schema lines to multiple tables
+                table_schemas = {tbl: [] for tbl in tables}
+                for i, line in enumerate(schema_lines):
+                    tbl = tables[i % len(tables)]
+                    table_schemas[tbl].append(line)
 
-        # Insert sample data
+                for tbl, cols in table_schemas.items():
+                    create_stmt = f"CREATE TABLE {tbl} ({', '.join(cols)});"
+                    cursor.execute(create_stmt)
+
+        # ✅ Step 2: Insert sample data
         if sample_data:
             cursor.executescript(sample_data)
 
-        # Execute user query
+        # ✅ Step 3: Run user query
         cursor.execute(query)
 
         if query.strip().lower().startswith("select"):
@@ -151,6 +161,7 @@ def run_sql():
         return jsonify({"success": False, "error": str(e)})
     finally:
         conn.close()
+
 
 
 # Entry point
